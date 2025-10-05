@@ -1,8 +1,9 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { LocationProvider, useLocation } from './contexts/LocationContext';
 import { FavoritesProvider } from './contexts/FavoritesContext';
 import { AuthProvider } from './contexts/AuthContext';
 import SSLRedirect from './components/SSLRedirect';
+import ErrorBoundary from './components/ErrorBoundary';
 import { DatabaseSeeder } from './components/DatabaseSeeder';
 import Header from './components/Header';
 import AnimatedBrandsBar from './components/AnimatedBrandsBar';
@@ -514,15 +515,46 @@ const AppContent: React.FC = () => {
 };
 
 function App() {
+  const [error, setError] = useState<Error | null>(null);
+
+  useEffect(() => {
+    const handleError = (event: ErrorEvent) => {
+      console.error('Error capturado:', event.error);
+      setError(event.error);
+    };
+
+    window.addEventListener('error', handleError);
+    return () => window.removeEventListener('error', handleError);
+  }, []);
+
+  if (error) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
+        <div className="bg-white rounded-lg shadow-lg p-6 max-w-2xl w-full">
+          <h1 className="text-2xl font-bold text-red-600 mb-4">Error de Aplicación</h1>
+          <p className="text-gray-700 mb-4">{error.message}</p>
+          <button
+            onClick={() => window.location.reload()}
+            className="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition-colors"
+          >
+            Recargar Página
+          </button>
+        </div>
+      </div>
+    );
+  }
+
   return (
-    <AuthProvider>
-      <LocationProvider>
-        <FavoritesProvider>
-          <SSLRedirect />
-          <AppContent />
-        </FavoritesProvider>
-      </LocationProvider>
-    </AuthProvider>
+    <ErrorBoundary>
+      <AuthProvider>
+        <LocationProvider>
+          <FavoritesProvider>
+            <SSLRedirect />
+            <AppContent />
+          </FavoritesProvider>
+        </LocationProvider>
+      </AuthProvider>
+    </ErrorBoundary>
   );
 }
 

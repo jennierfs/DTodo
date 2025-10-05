@@ -25,11 +25,15 @@ export const FavoritesProvider: React.FC<FavoritesProviderProps> = ({ children }
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    if (user) {
-      loadFavorites();
-    } else {
-      loadLocalFavorites();
-    }
+    const loadData = async () => {
+      if (user) {
+        await loadFavorites();
+      } else {
+        loadLocalFavorites();
+      }
+    };
+    loadData();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user]);
 
   const loadFavorites = async () => {
